@@ -4,11 +4,22 @@ from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import numpy as np
 
 # Import model loader
 import model_loader
+
+# CORS middleware configuration
+# Allows frontend applications to make cross-origin requests to this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (use specific origins in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Configure logging
 logging.basicConfig(
