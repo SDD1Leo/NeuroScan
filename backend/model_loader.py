@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 # Google Drive direct link - Replace with your actual model URL
 # To get direct link: Share file -> Anyone with link -> Copy link -> replace 'view' with 'uc'
-MODEL_URL = "PASTE_GOOGLE_DRIVE_DIRECT_LINK_HERE"
+MODEL_URL = "https://drive.google.com/uc?id=1jEuepg-jihpRjQdckjJU8fn6IC7rREKu"
 
 # Model file path
 MODEL_PATH = "models/brain_tumor_model.h5"
