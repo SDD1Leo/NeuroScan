@@ -1,0 +1,11 @@
+services:
+  - type: python
+    name: neuroscan-backend
+    runtime: python-3.11.9
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: TF_CPP_MIN_LOG_LEVEL
+        value: "2"
