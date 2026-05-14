@@ -11,16 +11,6 @@ import numpy as np
 # Import model loader
 import model_loader
 
-# CORS middleware configuration
-# Allows frontend applications to make cross-origin requests to this API
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins (use specific origins in production)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -33,6 +23,16 @@ app = FastAPI(
     title="NeuroScan Brain Tumor Detection API",
     description="AI-powered brain tumor detection using deep learning",
     version="1.0.0"
+)
+
+# CORS middleware configuration
+# Allows frontend applications to make cross-origin requests to this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (use specific origins in production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Class names for the 4-class brain tumor classification
