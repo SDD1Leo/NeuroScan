@@ -34,7 +34,9 @@ CLASS_NAMES = [
 ]
 
 # Image preprocessing constants
-IMAGE_SIZE = (224, 224)  # Standard size for most CNN architectures (e.g., VGG, ResNet)
+# Xception model expects 299x299 input (not 224x224)
+# Update this if your model requires a different input size
+IMAGE_SIZE = (299, 299)
 
 
 @app.on_event("startup")
