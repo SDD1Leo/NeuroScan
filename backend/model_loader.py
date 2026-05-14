@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 # Google Drive direct link - Replace with your actual model URL
 # To get direct link: Share file -> Anyone with link -> Copy link -> replace 'view' with 'uc'
-MODEL_URL = "https://drive.google.com/uc?id=1jEuepg-jihpRjQdckjJU8fn6IC7rREKu"
+MODEL_URL = "https://drive.google.com/uc?id=1fi4r4Af0gxityCKGfIN-_dD7CQoyO-Aj"
 
 # Model file path using .keras format (TensorFlow's recommended format)
 # .keras is the modern successor to .h5 - it uses ZipFile-based serialization
