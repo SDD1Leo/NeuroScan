@@ -10,8 +10,10 @@ logger = logging.getLogger(__name__)
 # To get direct link: Share file -> Anyone with link -> Copy link -> replace 'view' with 'uc'
 MODEL_URL = "https://drive.google.com/uc?id=1jEuepg-jihpRjQdckjJU8fn6IC7rREKu"
 
-# Model file path
-MODEL_PATH = "models/brain_tumor_model.h5"
+# Model file path using .keras format (TensorFlow's recommended format)
+# .keras is the modern successor to .h5 - it uses ZipFile-based serialization
+# which is more reliable, supports more features, and has better compatibility
+MODEL_PATH = "models/brain_tumor_model.keras"
 
 # Global model variable - will be loaded on startup
 model = None
@@ -49,12 +51,19 @@ def create_models_directory():
 
 def download_model_from_google_drive():
     """
-    Download the .h5 model from Google Drive using gdown.
+    Download the .keras model from Google Drive using gdown.
 
     Download Flow:
     1. Check if model already exists locally (skip download if exists)
     2. Use gdown to download large files from Google Drive
     3. gdown handles large file downloads better than direct HTTP
+    4. Downloaded .keras file is saved to models/ directory
+
+    Why .keras format?
+    - Modern TensorFlow native format (TensorFlow 2.x)
+    - Uses ZipFile-based serialization (more reliable than HDF5)
+    - Better support for custom layers, metrics, and model components
+    - Recommended by TensorFlow team over legacy .h5 format
 
     Note: For Google Drive links, ensure you use the direct download link:
     https://drive.google.com/uc?id=FILE_ID (not the view URL)
@@ -85,18 +94,26 @@ def load_model_into_memory():
     """
     Load the Keras model into memory for inference.
 
-    Inference Flow:
-    1. First ensure TensorFlow is optimized for low memory
-    2. Load the .h5 model file using Keras load_model
-    3. Model is loaded globally and reused for all predictions
-    4. This avoids reloading on every request (performance optimization)
+    Model Loading Flow:
+    1. First ensure TensorFlow is optimized for low memory/CPU-only
+    2. Import load_model from tensorflow.keras.models
+    3. Load .keras model file using load_model with compile=False
+    4. Model is loaded globally and reused for all predictions
+    5. This avoids reloading on every request (performance optimization)
+
+    Why compile=False?
+    - Faster loading (skips optimizer initialization)
+    - Lower memory footprint (no optimizer state stored)
+    - Suitable for inference-only scenarios like this API
+    - We don't need to retrain, just predict
 
     Returns:
         Loaded Keras model or None if loading fails
     """
     global model
 
-    # Optimize TensorFlow first
+    # Optimize TensorFlow first for CPU-only, low-memory operation
+    # This must be done BEFORE importing Keras to take effect
     setup_tensorflow_for_low_memory()
 
     # Import here to ensure environment variables are set first
@@ -108,7 +125,9 @@ def load_model_into_memory():
 
     try:
         logger.info(f"Loading Keras model from {MODEL_PATH}")
-        model = load_model(MODEL_PATH)
+        # Load .keras model with compile=False for faster, memory-efficient loading
+        # compile=False skips optimizer initialization - ideal for inference
+        model = load_model(MODEL_PATH, compile=False)
         logger.info("Model loaded successfully!")
         return model
     except Exception as e:

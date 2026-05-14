@@ -11,6 +11,19 @@ Production-ready FastAPI backend for brain tumor detection using deep learning.
 - Optimized for low-memory environments (Render free tier compatible)
 - Health check endpoints
 
+## Why .keras Format?
+
+This backend uses the modern `.keras` format instead of legacy `.h5`:
+
+- **Native TensorFlow format** - Official TensorFlow 2.x recommended format
+- **ZipFile-based serialization** - More reliable than HDF5
+- **Better feature support** - Full support for custom layers, metrics, and callbacks
+- **Improved compatibility** - Works seamlessly with TensorFlow 2.x and newer
+- **Efficient loading** - Supports `compile=False` for faster, memory-efficient inference
+- **Future-proof** - TensorFlow team actively maintains and improves .keras format
+
+The `.h5` format is deprecated and may cause issues with newer TensorFlow versions.
+
 ## Project Structure
 
 ```
@@ -132,7 +145,7 @@ fetch('https://your-render-app.onrender.com/predict', {
 
 ## Getting Google Drive Direct Link
 
-To get a direct download link for your `.h5` model:
+To get a direct download link for your `.keras` model:
 
 1. **Upload your model to Google Drive**
 

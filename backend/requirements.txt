@@ -4,4 +4,4 @@ tensorflow
 pillow
 numpy
 python-multipart
-gdown
+gdown==5.2.0
