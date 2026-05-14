@@ -1,5 +1,6 @@
 import logging
 import io
+import time
 from typing import Optional
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -45,8 +46,7 @@ CLASS_NAMES = [
 ]
 
 # Image preprocessing constants
-# Xception model expects 299x299 input (not 224x224)
-# Update this if your model requires a different input size
+# Xception model expects 299x299 input size
 IMAGE_SIZE = (299, 299)
 
 
@@ -149,16 +149,17 @@ def make_prediction(image_array: np.ndarray) -> dict:
 
     Prediction Flow:
     1. Get the global model instance
-    2. Run model.predict() on the preprocessed image
-    3. Get prediction probabilities for each class
-    4. Find the class with highest probability (argmax)
-    5. Return label and confidence score
+    2. Measure inference time
+    3. Run model.predict() on the preprocessed image
+    4. Extract softmax probabilities
+    5. Convert NumPy floats to Python floats (JSON serializable)
+    6. Calculate all required output fields
 
     Args:
         image_array: Preprocessed image as NumPy array
 
     Returns:
-        Dictionary with prediction label and confidence
+        Dictionary with all prediction data for frontend compatibility
     """
     # Get the loaded model
     model = model_loader.get_model()
@@ -166,20 +167,46 @@ def make_prediction(image_array: np.ndarray) -> dict:
     if model is None:
         raise RuntimeError("Model not loaded. Cannot make prediction.")
 
-    # Run inference
-    # Returns array of shape (1, num_classes) with probabilities
+    # Start timing inference
+    logger.info("Inference started")
+    start_time = time.time()
+
+    # Run inference - returns array of shape (1, num_classes) with probabilities
     prediction_probabilities = model.predict(image_array, verbose=0)
 
-    # Get the class with highest probability
-    predicted_class_index = np.argmax(prediction_probabilities[0])
-    confidence_score = float(prediction_probabilities[0][predicted_class_index])
+    # Measure inference time
+    inference_time = round(time.time() - start_time, 2)
+    logger.info(f"Inference completed in {inference_time}s")
 
-    # Map index to class name
+    # Extract probabilities as Python floats (JSON serializable)
+    # Convert from NumPy array to regular Python list
+    probabilities = prediction_probabilities[0].tolist()
+
+    # Get the class with highest probability
+    predicted_class_index = np.argmax(probabilities)
     predicted_label = CLASS_NAMES[predicted_class_index]
+
+    # Calculate confidence as percentage (highest probability * 100)
+    confidence = round(probabilities[predicted_class_index] * 100, 2)
+
+    # Build class probabilities dictionary (percentage format)
+    class_probabilities = {}
+    for i, class_name in enumerate(CLASS_NAMES):
+        class_probabilities[class_name] = round(probabilities[i] * 100, 2)
+
+    # Determine if tumor detected (any class except "No Tumor")
+    is_tumor = predicted_label != "No Tumor"
+
+    # Log prediction details
+    logger.info(f"Prediction: {predicted_label}, Confidence: {confidence}%, Is Tumor: {is_tumor}")
 
     return {
         "prediction": predicted_label,
-        "confidence": round(confidence_score, 2)
+        "confidence": confidence,
+        "class_probabilities": class_probabilities,
+        "is_tumor": is_tumor,
+        "inference_time": inference_time,
+        "input_size": f"{IMAGE_SIZE[0]}x{IMAGE_SIZE[1]}"
     }
 
 
